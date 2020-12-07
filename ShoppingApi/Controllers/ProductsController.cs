@@ -21,7 +21,15 @@ namespace ShoppingApi.Controllers
         public async Task<ActionResult> GetProductById(int id)
         {
             GetProductDetailResponse response = await _productLookup.GetProductById(id);
-            return Ok(response);
+            //if (response == null)
+            //{
+            //    return NotFound();
+            //}
+            //else
+            //{
+            //    return Ok(response);
+            //}
+            return this.Maybe(response);
         }
     }
 }

@@ -1,0 +1,23 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace ShoppingApi.Controllers
+{
+    public static class ControllerExtentions
+    {
+        public static ActionResult Maybe<T>(this ControllerBase controller, T obj)
+        {
+            if (obj == null)
+            {
+                return new NotFoundResult();
+            }
+            else
+            {
+                return new OkObjectResult(obj);
+            }
+        }
+    }
+}
