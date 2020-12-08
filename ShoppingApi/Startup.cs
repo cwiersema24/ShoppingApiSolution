@@ -31,6 +31,7 @@ namespace ShoppingApi
         {
             services.AddControllers();
             services.AddScoped<ILookupProducts, EFSqlProducts>();
+            services.AddScoped<IProductCommands, EFSqlProducts>();
             services.AddDbContext<ShoppingDataContext>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("shopping"));
@@ -44,6 +45,14 @@ namespace ShoppingApi
             var mapper = mapperConfiguration.CreateMapper();
             services.AddSingleton<IMapper>(mapper);
             services.AddSingleton<MapperConfiguration>(mapperConfiguration);
+
+            var configForPricing = new ConfigurationForPricing();
+            Configuration.GetSection(configForPricing.SectionName).Bind(configForPricing);
+
+            services.Configure<ConfigurationForPricing>(
+                Configuration.GetSection(configForPricing.SectionName));
+
+            services.AddHostedService<CurbsideOrderProcessor>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
