@@ -1,5 +1,8 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using ShoppingApi.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,13 +26,26 @@ namespace ShoppingApi.Services
 
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (true)
+            await foreach(var order in _channel.ReadAllAsync())
             {
-                await Task.Delay(1000);
-                _logger.LogInformation("Background worker doing it's thing");
-                if (stoppingToken.IsCancellationRequested)
+                using var scope = _serviceProvider.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<ShoppingDataContext>();
+
+                var saveOrder = await context.CurbSide.SingleOrDefaultAsync(o => o.Id == order.ReservationId);
+                if(saveOrder == null)
                 {
-                    break;
+                    continue;
+                }
+                else
+                {
+                    var numberOfItems = saveOrder.Items.Split(',').Count();
+                    for (var t = 0; t<numberOfItems; t++)
+                    {
+                        await Task.Delay(1000);
+                    }
+                    saveOrder.Status = CurbSideOrderStatus.Approved;
+                    saveOrder.PickupDate = DateTime.Now.AddHours(numberOfItems);
+                    await context.SaveChangesAsync();
                 }
             }
         }

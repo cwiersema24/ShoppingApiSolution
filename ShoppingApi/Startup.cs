@@ -13,6 +13,7 @@ using ShoppingApi.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace ShoppingApi
@@ -29,7 +30,12 @@ namespace ShoppingApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                    options.JsonSerializerOptions.IgnoreNullValues = true;
+                });
             services.AddScoped<ILookupProducts, EFSqlProducts>();
             services.AddScoped<IProductCommands, EFSqlProducts>();
             services.AddDbContext<ShoppingDataContext>(options =>
@@ -51,6 +57,8 @@ namespace ShoppingApi
 
             services.Configure<ConfigurationForPricing>(
                 Configuration.GetSection(configForPricing.SectionName));
+
+            services.AddSingleton<CurbsideChannel>();
 
             services.AddHostedService<CurbsideOrderProcessor>();
         }

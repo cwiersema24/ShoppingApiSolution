@@ -40,9 +40,6 @@ namespace ShoppingApi.Services
 
         public IAsyncEnumerable<CurbsideChannelRequest> ReadAllAsync(CancellationToken ct = default) => _theChannel.Reader.ReadAllAsync(ct);
 
-        public class CurbsideChannelRequest
-        {
-            public int ReservationId { get; set; }
-        }
+        
     }
 }
