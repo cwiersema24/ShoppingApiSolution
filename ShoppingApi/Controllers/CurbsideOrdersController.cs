@@ -20,7 +20,7 @@ namespace ShoppingApi.Controllers
             _context = context;
             _channel = channel;
         }
-
+        
         [HttpPost("async/curbsideorders")]
         public async Task<ActionResult> AsyncCurbsideOrders([FromBody] PostSyncCurbsideOrdersRequest request)
         {
@@ -52,6 +52,8 @@ namespace ShoppingApi.Controllers
             }
 
         }
+
+        [ResponseCache(Duration = 5, Location = ResponseCacheLocation.Client)]
         [HttpGet("curbsideorders/{id:int}", Name ="curbsideorders#getbyid")]
         public async Task<ActionResult> GetById(int id)
         {
@@ -68,7 +70,7 @@ namespace ShoppingApi.Controllers
             return this.Maybe(order);
         }
 
-            [HttpPost("sync/curbsideorders")]
+        [HttpPost("sync/curbsideorders")]
         public async Task<ActionResult> SyncCurbsideOrders([FromBody] PostSyncCurbsideOrdersRequest request)
         {
             if (!ModelState.IsValid)
@@ -77,17 +79,22 @@ namespace ShoppingApi.Controllers
             }
             else
             {
+                // Save it to the DB
                 var orderToSave = new CurbSideOrder
                 {
                     For = request.For,
-                    Items = request.Items
+                    Items = request.Items,
                 };
                 var numberOfItems = orderToSave.Items.Split(',').Count();
-                for (var t = 0; t< numberOfItems; t++) 
-                { await Task.Delay(1000); }
+                for (var t = 0; t < numberOfItems; t++)
+                {
+                    await Task.Delay(1000);
+                }
                 orderToSave.PickupDate = DateTime.Now.AddHours(numberOfItems);
+                // return 201, Location Header, Copy of the Entity
                 _context.CurbSide.Add(orderToSave);
                 await _context.SaveChangesAsync();
+
                 var response = new GetCurbsideOrderResponse
                 {
                     Id = orderToSave.Id,
